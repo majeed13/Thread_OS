@@ -2,8 +2,11 @@ public class FileSystem {
 	private SuperBlock superblock;
 	private Directory directory;
 	private FileTable fileTable;
+    private int numberOfBlocks;
 
 	public FileSystem(int diskBlocks) {
+        // number of total blocks on DISK
+        numberOfBlocks = diskBlocks;
 	    // create superblock, and format disk with 64 inodes in default
 	    superblock = new SuperBlock(diskBlocks);
 
@@ -24,7 +27,7 @@ public class FileSystem {
 	    close(dirEnt);
 	}
 
-	void sync() {
+	public void sync() {
 
 	}
 
@@ -32,8 +35,24 @@ public class FileSystem {
     Formats the disk (Disk.java's data contents). The parameter files specifies the maximum number of files to be created 
     (the number of inodes to be allocated) in your file system. The return value is 0 on success, otherwise -1.
     */
-	boolean format(int files) {
-
+	public boolean format(int files) {
+        if (files <= 64 && files > 0) {
+            superblock.totalBlocks = numberOfBlocks;
+            superblock.totalInodes = files;
+            superblock.freeList = (files)/16 + 1;
+            byte[] buf = new byte[Disk.blockSize];
+            // write the int values to the buffer
+            SysLib.int2bytes(totalBlocks, buf, 0);
+            SysLib.int2bytes(totalInodes, buf, 4);
+            SysLib.int2bytes(freeList, buf, 8);
+            // write the buffer to DISK
+            SysLib.rawwrite(0, buf);
+            return true;
+        }
+        else {
+            //print error
+            return false;
+        }
 	}
 
     /*
