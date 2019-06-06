@@ -26,16 +26,29 @@ public class Superblock {
 
     public boolean format( int files ) {
     	if (files <= 64 && files > 0) {
-            totalBlocks = numberOfBlocks;
+            //totalBlocks = numberOfBlocks;
             totalInodes = files;
             freeList = (files)/16 + 1;
             byte[] buf = new byte[Disk.blockSize];
+            
             // write the int values to the buffer
             SysLib.int2bytes(totalBlocks, buf, 0);
             SysLib.int2bytes(totalInodes, buf, 4);
             SysLib.int2bytes(freeList, buf, 8);
+            
             // write the buffer to DISK
             SysLib.rawwrite(0, buf);
+            short freeLink = freeList + 1;
+
+            // create the links between free blocks
+            for( int i = freeList; freeLink < totalBlocks; i++, freeLink++ ) {
+            	byte[] link = new byte[Disk.blockSize];
+            	SysLib.int2bytes( freeLink, link, 0 );
+            	SysLib.rawwrite(i, link);
+            	link = null;
+            }
+            
+            buf = null;
             return true;
         }
         else {

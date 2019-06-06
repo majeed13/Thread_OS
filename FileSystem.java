@@ -36,23 +36,8 @@ public class FileSystem {
     (the number of inodes to be allocated) in your file system. The return value is 0 on success, otherwise -1.
     */
 	public boolean format(int files) {
-        if (files <= 64 && files > 0) {
-            superblock.totalBlocks = numberOfBlocks;
-            superblock.totalInodes = files;
-            superblock.freeList = (files)/16 + 1;
-            byte[] buf = new byte[Disk.blockSize];
-            // write the int values to the buffer
-            SysLib.int2bytes(totalBlocks, buf, 0);
-            SysLib.int2bytes(totalInodes, buf, 4);
-            SysLib.int2bytes(freeList, buf, 8);
-            // write the buffer to DISK
-            SysLib.rawwrite(0, buf);
-            return true;
-        }
-        else {
-            //print error
-            return false;
-        }
+        superblock.format(files);
+        
 	}
 
     /*
@@ -63,7 +48,7 @@ public class FileSystem {
     If the calling thread's user file descriptor table is full, SysLib.open should return an error value. The seek pointer is initialized to zero in the mode 
     "r", "w", and "w+", whereas initialized at the end of the file in the mode "a".
     */
-	FileTableEntry open(String fileName, String mode) {
+	public FileTableEntry open(String fileName, String mode) {
 
 	}
 
