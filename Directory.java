@@ -18,6 +18,15 @@ public class Directory {
    public void bytes2directory( byte data[] ) {
       // assumes data[] received directory information from disk
       // initializes the Directory instance with this data[]
+      int offset = 0;
+      for ( int i = 0; i < fsizes.length; i++ offest += 4) {
+         fsizes[i] = SysLib.bytes2int(data, offset);
+      }
+
+      for ( int i = 0; i < fnames.length; i++, offset += maxChars * 2) {
+         String name = new String(data, offset, maxChars * 2);
+         name.getChars(0, fsizes[i], fnames[i], 0);
+      }
    }
 
    public byte[] directory2bytes( ) {

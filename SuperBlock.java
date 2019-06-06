@@ -20,7 +20,41 @@ public class Superblock {
     	else {
     		//need to format the disk
     		totalBlocks = diskSize
-    		SysLib.format(NUM_FILES);
+    		format( NUM_FILES );
     	}
     }
+
+    public boolean format( int files ) {
+    	if (files <= 64 && files > 0) {
+            totalBlocks = numberOfBlocks;
+            totalInodes = files;
+            freeList = (files)/16 + 1;
+            byte[] buf = new byte[Disk.blockSize];
+            // write the int values to the buffer
+            SysLib.int2bytes(totalBlocks, buf, 0);
+            SysLib.int2bytes(totalInodes, buf, 4);
+            SysLib.int2bytes(freeList, buf, 8);
+            // write the buffer to DISK
+            SysLib.rawwrite(0, buf);
+            return true;
+        }
+        else {
+            //print error
+            return false;
+        }
+    }
+
+    public void sync( ) {
+    	// write back totalBlocks, inodeBlocks and freeList to disk
+    }
+
+    public int getFreeBlock( ) {
+    	// dequeue the top block from the free list
+    }
+
+    public boolean returnBlock ( ) {
+    	// enqueue a given block to the end of the free list
+    }
+
+
 }
