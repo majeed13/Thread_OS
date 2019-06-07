@@ -34,7 +34,7 @@ public class FileSystem {
 	public boolean format(int files) {
         if (files > 64 || files < 0)
             return false;
-
+        SysLib.cout("FILESYSTE inside of format\n");
         return (superblock.format(files) && createInodes(files));
 	}
 

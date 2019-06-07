@@ -30,9 +30,10 @@ public class SuperBlock {
             totalInodes = files;
             freeList = (files)/16 + 1;
             byte[] buf = new byte[Disk.blockSize];
-            SysLib.cout("block size = " + totalBlocks + "\n");
+            SysLib.cout("*SUPERBLOCK* block size = " + totalBlocks + "\n");
+
             // write the int values to the buffer
-            SysLib.int2bytes(1000, buf, 0);
+            SysLib.int2bytes(totalBlocks, buf, 0);
             SysLib.int2bytes(totalInodes, buf, 4);
             SysLib.int2bytes(freeList, buf, 8);
             
