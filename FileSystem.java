@@ -36,9 +36,44 @@ public class FileSystem {
     (the number of inodes to be allocated) in your file system. The return value is 0 on success, otherwise -1.
     */
 	public boolean format(int files) {
-        superblock.format(files);
-        
+        if (files > 64 || files < 0)
+            return false;
+
+        return (superblock.format(files) && createInodes(files));
+        /*superblock.format(files);
+        createInodes(files);*/
 	}
+
+    /*
+    *
+    */
+    private boolean createInodes(int files) {
+        if (files > 64 || files < 0)
+            return false;
+
+        int bNum = files/16;
+        short offset = 0;
+        for ( int i = 0; i <= bNum; i++) {
+            byte[] buf = new byte[Disk.blockSize];
+            for (int j = 0; j < 16; j++) {
+                Inode toAdd = new Inode();
+                SysLib.int2bytes( toAdd.length, buf, offset );
+                offset += 4;
+                SysLib.short2byte( toAdd.count, buf, offset );
+                offset += 2;
+                SysLib.short2byte( toAdd.flag, buf, offset );
+                offset += 2;
+                for(int k = 0; k < 11; k++, offset += 2) {
+                    SysLib.short2byte( toAdd.direct[k], buf, offset );
+                }
+                SysLib.short2byte( toAdd.indirect, buf, offset);
+                offset += 2;
+            }
+            SysLib.rawwrite(i, buf);
+            offset = 0;
+        }
+        return true;
+    }
 
     /*
     Opens the file specified by the fileName string in the given mode (where "r" = ready only, "w" = write only, "w+" = read/write, "a" = append). 
