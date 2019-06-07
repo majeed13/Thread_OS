@@ -1,3 +1,5 @@
+import java.util.Vector;
+
 public class FileTable {
 
    private Vector<FileTableEntry> table;         // the actual entity of this file table
@@ -36,10 +38,10 @@ public class FileTable {
                }
             }
             else if ( mode.equals("w") ) {
-               ...
+              
             }
             else if ( mode.equals("w+") ) {
-               ...
+               
             }
             else if ( mode.equals("a") ) {
 
