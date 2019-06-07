@@ -222,8 +222,9 @@ public class Kernel
                   
               /* case DELETE:  // to be implemented in project
                   return ( fs.delete( (String) args ) ) ? OK : ERROR;
+                  */
             }
-            return ERROR;*/
+            return ERROR;
          case INTERRUPT_DISK: // Disk interrupts
             // wake up the thread waiting for a service completion
             ioQueue.dequeueAndWakeup( COND_DISK_FIN );
