@@ -14,7 +14,7 @@ public class FileSystem {
 	    directory = new Directory(superblock.totalInodes);
 
 	    // file table is created, and store directory in the file table
-	    fileTable = new FileTable(directory);
+	    /*fileTable = new FileTable(directory);
 
 	    // directory reconstruction
 	    FileTableEntry dirEnt = open("/", "r");
@@ -24,7 +24,7 @@ public class FileSystem {
 	    	read(dirEnt, dirData);
 	    	directory.bytes2directory(dirData);
 	    }
-	    close(dirEnt);
+	    close(dirEnt);*/
 	}
 
 	public void sync() {
@@ -50,14 +50,14 @@ public class FileSystem {
                 Inode toAdd = new Inode();
                 SysLib.int2bytes( toAdd.length, buf, offset );
                 offset += 4;
-                SysLib.short2byte( toAdd.count, buf, offset );
+                SysLib.short2bytes( toAdd.count, buf, offset );
                 offset += 2;
-                SysLib.short2byte( toAdd.flag, buf, offset );
+                SysLib.short2bytes( toAdd.flag, buf, offset );
                 offset += 2;
                 for(int k = 0; k < 11; k++, offset += 2) {
-                    SysLib.short2byte( toAdd.direct[k], buf, offset );
+                    SysLib.short2bytes( toAdd.direct[k], buf, offset );
                 }
-                SysLib.short2byte( toAdd.indirect, buf, offset);
+                SysLib.short2bytes( toAdd.indirect, buf, offset);
                 offset += 2;
             }
             SysLib.rawwrite(i, buf);
