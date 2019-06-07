@@ -1,5 +1,5 @@
 
-public class Superblock {
+public class SuperBlock {
     private final int NUM_FILES = 64;
     public int totalBlocks; // the number of disk blocks
     public int totalInodes; // the number of inodes
@@ -7,7 +7,7 @@ public class Superblock {
    
     public SuperBlock( int diskSize ) {
     	//read the superblock from disk
-    	byte[] bytes = new byte(Disk.blockSize);
+    	byte[] bytes = new byte[Disk.blockSize];
     	SysLib.rawread(0, bytes);
     	totalBlocks = SysLib.bytes2int(bytes, 0);
     	totalInodes = SysLib.bytes2int(bytes, 4);
@@ -15,11 +15,11 @@ public class Superblock {
 
     	if(totalBlocks == diskSize && totalInodes > 0 && freeList >= 2) {
     		//disk contents are valid
-    		return;
+    		//return;
     	}
     	else {
     		//need to format the disk
-    		totalBlocks = diskSize
+    		totalBlocks = diskSize;
     		format( NUM_FILES );
     	}
     }
@@ -30,15 +30,15 @@ public class Superblock {
             totalInodes = files;
             freeList = (files)/16 + 1;
             byte[] buf = new byte[Disk.blockSize];
-            
+            SysLib.cout("block size = " + totalBlocks + "\n");
             // write the int values to the buffer
-            SysLib.int2bytes(totalBlocks, buf, 0);
+            SysLib.int2bytes(1000, buf, 0);
             SysLib.int2bytes(totalInodes, buf, 4);
             SysLib.int2bytes(freeList, buf, 8);
             
             // write the buffer to DISK
             SysLib.rawwrite(0, buf);
-            short freeLink = freeList + 1;
+            short freeLink = (short)(freeList + 1);
 
             // create the links between free blocks
             for( int i = freeList; freeLink < totalBlocks; i++, freeLink++ ) {
@@ -63,10 +63,12 @@ public class Superblock {
 
     public int getFreeBlock( ) {
     	// dequeue the top block from the free list
+        return 0;
     }
 
     public boolean returnBlock ( ) {
     	// enqueue a given block to the end of the free list
+        return false;
     }
 
 
