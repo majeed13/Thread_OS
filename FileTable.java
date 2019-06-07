@@ -57,6 +57,7 @@ public class FileTable {
          table.addElement( e ); // create a table entry and register it
          return e;
       }
+      return null;
    }
 
    public synchronized boolean ffree( FileTableEntry e ) {
@@ -64,6 +65,7 @@ public class FileTable {
       // save the corresponding inode to the disk
       // free this file table entry.
       // return true if this file table entry found in my table
+      return null;
    }
 
    public synchronized boolean fempty( ) {
