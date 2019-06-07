@@ -181,7 +181,7 @@ public class Kernel
                case CFLUSH:  // to be implemented in assignment 4
                   cache.flush( );
                   return OK;
-               case OPEN:    // to be implemented in project
+               /*case OPEN:    // to be implemented in project
                   if ( ( myTcb = scheduler.getMyTcb( ) )!= null) {
                      String[] s = ( String[] ) args;
                      return myTcb.getFd( fs.open( s[0], s[1] ) );
@@ -216,14 +216,14 @@ public class Kernel
                         return fs.seek( ftEnt, sArgs[0], sArgs[1]);
                   }
                   return ERROR;
-
+*/
                case FORMAT:  // to be implemented in project
                   return ( fs.format( param ) ) ? OK : ERROR;
                   
-               case DELETE:  // to be implemented in project
+              /* case DELETE:  // to be implemented in project
                   return ( fs.delete( (String) args ) ) ? OK : ERROR;
             }
-            return ERROR;
+            return ERROR;*/
          case INTERRUPT_DISK: // Disk interrupts
             // wake up the thread waiting for a service completion
             ioQueue.dequeueAndWakeup( COND_DISK_FIN );
