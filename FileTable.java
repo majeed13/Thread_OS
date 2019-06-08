@@ -21,13 +21,28 @@ public class FileTable {
       Inode inode = null;
 
       while ( true ) {
-         iNum = (fname.equals("/")) ? 0 : dir.namei(fname);
+         iNum = (fname.equals("/")) ? 0 : dir.namei( fname );
+         if ( iNum == -1 ) {
+        	 SysLib.cout("**filetable** FILE NOT FOUND\n");
+        	 if ( mode.equals("r") ) {
+        		 SysLib.cout("File Does Not Exist: Read Not Allowed.\n");
+        		 return null;
+        	 }
+        	 iNum = (short)dir.freeSpot();
+        	 SysLib.cout("**iNum = " + iNum + "**\n");
+        	 inode = new Inode ( iNum );
+        	 inode.flag = 2;
+        	 break;
+         }
          if ( iNum >= 0 ) {
             inode = new Inode( iNum );
+            // read mode attempted access
             if ( mode.equals("r") ) {
-               if ( inode.flag == 0 ) // read flag
+               if ( inode.flag == 1 || inode.flag == 0 ) {// read flag
+            	  inode.flag = 1;
                   break;
-               else if ( inode.flag == 1) { // write flag
+               }
+               else if ( inode.flag == 2 ) { // write flag
                   try {
                      wait();
                   } catch (InterruptedException e) { }; // print error 
@@ -37,27 +52,78 @@ public class FileTable {
                   return null; 
                }
             }
+            // write mode attempted access
             else if ( mode.equals("w") ) {
-              
+            	if ( inode.flag == 0 ) {
+            		inode.flag = 2;
+            		break;
+            	}
+            	if ( inode.flag == 1 || inode.flag == 2 ) {
+            		try {
+            			wait();
+            		} catch (InterruptedException e) { }; // print error 
+            	}
+            	else { // to be deleted flag
+                    iNum = -1;
+                    return null; 
+                 }
             }
+            
+            // read and write mode attempted access
             else if ( mode.equals("w+") ) {
-               
+            	if ( inode.flag == 0 ) {
+            		inode.flag = 2;
+            		break;
+            	}
+            	if ( inode.flag == 1 || inode.flag == 2 ) {
+            		try {
+            			wait();
+            		} catch (InterruptedException e) { }; // print error 
+            	}
+            	else { // to be deleted flag
+                    iNum = -1;
+                    return null; 
+                 }
             }
+            
+            // append mode attempted access
             else if ( mode.equals("a") ) {
-
+            	if ( inode.flag == 0 ) {
+            		inode.flag = 2;
+            		break;
+            	}
+            	if ( inode.flag == 1 || inode.flag == 2 ) {
+            		try {
+            			wait();
+            		} catch (InterruptedException e) { }; // print error 
+            	}
+            	else { // to be deleted flag
+                    iNum = -1;
+                    return null; 
+                 }
             }
             else {
                // error mode
             }
          }
-
-         inode.count++;
-         inode.toDisk( iNum );
-         FileTableEntry e = new FileTableEntry( inode, iNum, mode );
-         table.addElement( e ); // create a table entry and register it
-         return e;
       }
-      return null;
+      
+      if ( mode.equals("r") ) {
+     	 for(int i = 0; i < table.size(); i++) {
+     		 if (table.get(i).iNumber == iNum) {
+     			 table.get(i).count++;
+     			 inode.count++;
+     			 return table.get(i);
+     		 }
+     	 }
+      }
+      
+      inode.count++;
+      inode.toDisk( iNum );
+      FileTableEntry e = new FileTableEntry( inode, iNum, mode );
+      table.addElement( e ); // create a table entry and register it
+      return e;
+      
    }
 
    public synchronized boolean ffree( FileTableEntry e ) {
@@ -65,7 +131,7 @@ public class FileTable {
       // save the corresponding inode to the disk
       // free this file table entry.
       // return true if this file table entry found in my table
-      return null;
+      return false;
    }
 
    public synchronized boolean fempty( ) {

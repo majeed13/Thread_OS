@@ -181,48 +181,48 @@ public class Kernel
                case CFLUSH:  // to be implemented in assignment 4
                   cache.flush( );
                   return OK;
-               /*case OPEN:    // to be implemented in project
+               case OPEN:    // to be implemented in project
                   if ( ( myTcb = scheduler.getMyTcb( ) )!= null) {
                      String[] s = ( String[] ) args;
+                     SysLib.cout(s[0] + " + " + s[1] + "\n");
                      return myTcb.getFd( fs.open( s[0], s[1] ) );
                   }
                   else
                      return ERROR;
 
                case CLOSE:   // to be implemented in project
-                  if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
+                  /*if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
                      FileTableEntry ftEnt = myTcb.getFtEnt( param );
                      if ( ftEnt == null || !fs.close( ftEnt ) )
                         return ERROR;
                      if ( myTcb.returnFd( param ) != ftEnt )
                         return ERROR;
                      return OK;
-                  }
+                  }*/
                   return ERROR;
 
                case SIZE:    // to be implemented in project
-                  if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
+                  /*if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
                      FileTableEntry ftEnt = myTcb.getFtEnt( param );
                      if ( ftEnt != null )
                         return fs.fsize( ftEnt );
-                  }
+                  }*/
                   return ERROR;
 
                case SEEK:    // to be implemented in project
-                  if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
+                 /* if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
                      int[] sArgs = ( int[] ) args;
                      FileTableEntry ftEnt = myTcb.getFtEnt( param );
                      if ( ftEnt != null )
                         return fs.seek( ftEnt, sArgs[0], sArgs[1]);
-                  }
+                  }*/
                   return ERROR;
-*/
+
                case FORMAT:  // to be implemented in project
                   return ( fs.format( param ) ) ? OK : ERROR;
                   
-              /* case DELETE:  // to be implemented in project
-                  return ( fs.delete( (String) args ) ) ? OK : ERROR;
-                  */
+               case DELETE:  // to be implemented in project
+                  return OK; //( fs.delete( (String) args ) ) ? OK : ERROR;
             }
             return ERROR;
          case INTERRUPT_DISK: // Disk interrupts
@@ -294,3 +294,4 @@ public class Kernel
       }
    }
 }
+
