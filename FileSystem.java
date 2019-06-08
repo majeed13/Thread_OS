@@ -103,8 +103,67 @@ public class FileSystem {
 	}
 
     
-	public int write(FileTableEntry ftEnt, byte[] buffer) {
-		return 0;
+	public synchronized int write(FileTableEntry ftEnt, byte[] buf) {
+		int i = 0;
+		int j = buf.length;
+		while (j > 0) {
+			int blockToWrite = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+			// block not assigned in iNode
+			if ( blockToWrite == -1 ) {
+				// retrieve first free block
+				int freeBlock = (short)superblock.getFreeBlock();
+				// attempt to register the free bock in the iNode of the ftEnt
+				int reg = ftEnt.inode.registerTargetBlock( ftEnt.seekPtr, (short)freeBlock );
+		        /*switch ( ftEnt.inode.registerTargetBlock(ftEnt.seekPtr, freeBlock) ) {
+		          case 0: 
+		            break; 
+		          case -1: 
+		            SysLib.cerr("ThreadOS: filesystem panic on write\n");
+		            return -1;
+		          case -2: 
+		            short s = (short)superblock.getFreeBlock();
+		            if ( !ftEnt.inode.registerIndexBlock(s) ) {
+		              SysLib.cerr("ThreadOS: panic on write\n");
+		              return -1;
+		            }
+		            if ( ftEnt.inode.registerTargetBlock(ftEnt.seekPtr, freeBlock ) != 0) {
+		              SysLib.cerr("ThreadOS: panic on write\n");
+		              return -1;
+		            }
+		            break;
+		          }*/
+				if ( reg == -1 ) {
+					SysLib.cout("* *Error: invalid register action* *\n");
+					return -1;
+				}
+				else if ( reg == -2 ) {
+					
+				}
+		        blockToWrite = freeBlock;
+		        
+		        byte[] bytes = new byte[Disk.blockSize];
+		        if ( SysLib.rawread( blockToWrite, bytes ) == -1 ) {
+		          System.exit(2);
+		        }
+		        int n = ftEnt.seekPtr % 512;
+		        int i1 = 512 - n;
+		        int i2 = Math.min(i1, j);
+		        
+		        System.arraycopy( buf, i, bytes, n, i2 );
+		        
+		        SysLib.rawwrite( blockToWrite, bytes );
+		        
+		        ftEnt.seekPtr += i2;
+		        i += i2;
+		        j -= i2;
+		        if (ftEnt.seekPtr > ftEnt.inode.length) {
+		        	ftEnt.inode.length = ftEnt.seekPtr;
+		        }
+		      }
+			ftEnt.inode.toDisk(ftEnt.iNumber);
+		      
+		      return i;
+		    }
 	}
 
 	private boolean deallocAllBlocks(FileTableEntry ftEnt) {

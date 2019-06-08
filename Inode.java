@@ -8,7 +8,7 @@ public class Inode {
    public short direct[] = new short[directSize]; // direct pointers
    public short indirect;                         // a indirect pointer
 
-   Inode( ) {                                     // a default constructor
+   public Inode( ) {                                     // a default constructor
       length = 0;
       count = 0;
       flag = 1;
@@ -17,7 +17,7 @@ public class Inode {
       indirect = -1;
    }
 
-   Inode( short iNumber ) {                       // retrieving inode from disk
+   public Inode( short iNumber ) {                       // retrieving inode from disk
       // design it by yourself.
       int bNum = 1 + iNumber / 16;
       byte[] data = new byte[Disk.blockSize];
@@ -72,66 +72,86 @@ public class Inode {
      return this.indirect;
    }
    
-   boolean registerIndexBlock(short paramShort) {
-     for (int i = 0; i < 11; i++) {
-       if (this.direct[i] == -1) {
+   public boolean registerIndexBlock(short bNum) {
+	 // check to see if all indirect blocks are allocated
+     for (int i = 0; i < directSize; i++) {
+       if ( direct[i] == -1 ) {
          return false;
        }
      }
-     if (this.indirect != -1) {
+     // check to make sure indirect block is NOT allocated already
+     if (indirect != -1) {
        return false;
      }
-     this.indirect = paramShort;
-     byte[] arrayOfByte = new byte[Disk.blockSize];
+     // set indirect to point to the passed in bNum
+     indirect = bNum;
+     // create buffer to write short value -1 into
+     byte[] bytes = new byte[Disk.blockSize];
      for (int i = 0; i < 256; i++) {
-       SysLib.short2bytes((short)-1, arrayOfByte, i * 2);
+       SysLib.short2bytes((short)-1, bytes, i * 2);
      }
-     SysLib.rawwrite(paramShort, arrayOfByte);
+     // write the buffer to the indirect disk block
+     SysLib.rawwrite(bNum, bytes);
      
      return true;
    }
    
-   int findTargetBlock(int paramInt) {
-     int i = paramInt / 512;
-     if (i < 11) {
-       return this.direct[i];
+   public int findTargetBlock(int pos) {
+	 // determine what block of the file we need access to
+     int localBNum = pos / Disk.blockSize;
+     // block is pointed to by direct pointers?
+     if ( localBNum < directSize ) {
+       return direct[localBNum];
      }
-     if (this.indirect < 0) {
+     // no indirect set for this iNode
+     if ( indirect < 0 ) {
        return -1;
      }
+     // create buffer to read block numbers pointed to by indirect
      byte[] arrayOfByte = new byte[Disk.blockSize];
-     SysLib.rawread(this.indirect, arrayOfByte);
-     int j = i - 11;
-     return SysLib.bytes2short(arrayOfByte, j * 2);
+     SysLib.rawread( indirect, arrayOfByte );
+     // determine indirect block number we need access to
+     int indirectBNum = localBNum - directSize;
+     // return the short that points to the correct block we need
+     return SysLib.bytes2short( arrayOfByte, indirectBNum * 2 );
    }
    
-   int registerTargetBlock(int paramInt, short paramShort) {
-     int i = paramInt / 512;
-     if (i < 11) {
-       if (this.direct[i] >= 0) {
+   public int registerTargetBlock(int pos, short bNum) {
+	 // determine what block of the file we need access to
+     int localBNum = pos / Disk.blockSize;
+     // block is pointed to by direct pointers?
+     if ( localBNum < directSize ) {
+       if ( direct[localBNum] >= 0 ) {
+         return -1;  // invalid register action
+       }
+       // check if the previous file block is empty?
+       if ( (localBNum > 0) && (direct[(localBNum - 1)] == -1) ) {
          return -1;
        }
-       if ((i > 0) && (this.direct[(i - 1)] == -1)) {
-         return -2;
-       }
-       this.direct[i] = paramShort;
+       // block to register already exists in direct pointer array
+       direct[localBNum] = bNum;
        return 0;
      }
+     // check if the indirect block is used
      if (this.indirect < 0) {
-       return -3;
+       return -2; // need to add the block to the indirect pointer
      }
-     byte[] arrayOfByte = new byte[Disk.blockSize];
-     SysLib.rawread(this.indirect, arrayOfByte);
-     int j = i - 11;
-     if (SysLib.bytes2short(arrayOfByte, j * 2) > 0)
+     // need to read the indirect pointers to see if there is open space
+     byte[] bytes = new byte[Disk.blockSize];
+     SysLib.rawread( indirect, bytes );
+     int indirectBNum = localBNum - directSize;
+     // read contents at the offest in the indirect block
+     short tmp = SysLib.bytes2short( bytes, indirectBNum * 2);
+     // check if the content is not -1
+     if ( tmp > 0 )
      {
-       SysLib.cerr("indexBlock, indirectNumber = " + j + " contents = " + SysLib.bytes2short(arrayOfByte, j * 2) + "\n");
-       
+       SysLib.cout("indexBlock, indirectNumber = " + indirectBNum + " contents = " + tmp + "\n");
        return -1;
      }
-     SysLib.short2bytes(paramShort, arrayOfByte, j * 2);
-     
-     SysLib.rawwrite(this.indirect, arrayOfByte);
+     // write the block num to register in the indirect block at the correct offset
+     SysLib.short2bytes(bNum, bytes, indirectBNum * 2);
+     // write the buffer back to the indirect block
+     SysLib.rawwrite(indirect, bytes);
      return 0;
    }
    
