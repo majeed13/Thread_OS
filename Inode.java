@@ -160,6 +160,10 @@ public class Inode {
      return SysLib.bytes2short( arrayOfByte, indirectBNum * 2 );
    }
    
+   /* * * * * * registerTargetBlock( int, short ) * * * * * *
+    * this method is used to add the passed in bNum to the list of indirect
+    * block pointers for this Inode at the specified position in the file
+    */
    public int registerTargetBlock(int pos, short bNum) {
 	 // determine what block of the file we need access to
      int localBNum = pos / Disk.blockSize;
@@ -184,27 +188,36 @@ public class Inode {
      byte[] bytes = new byte[Disk.blockSize];
      SysLib.rawread( indirect, bytes );
      int indirectBNum = localBNum - directSize;
-     // read contents at the offest in the indirect block
+     // read contents at the offset in the indirect block
      short tmp = SysLib.bytes2short( bytes, indirectBNum * 2);
-     // check if the content is not -1
+     // check if the content is not -1 (already pointing to another block)
      if ( tmp > 0 )
      {
-       SysLib.cout("indexBlock, indirectNumber = " + indirectBNum + " contents = " + tmp + "\n");
+       SysLib.cout("File block [" + localBNum + "] residing in indirect block [" + indirectBNum + "] "
+       		+ "contains = " + tmp + "\n");
        return -1;
      }
      // write the block num to register in the indirect block at the correct offset
-     SysLib.short2bytes(bNum, bytes, indirectBNum * 2);
+     int IBlockOffset = indirectBNum * 2;
+     SysLib.short2bytes(bNum, bytes, IBlockOffset);
      // write the buffer back to the indirect block
      SysLib.rawwrite(indirect, bytes);
      return 0;
    }
    
-   byte[] unregisterIndexBlock() {
-     if (this.indirect >= 1) {
-       byte[] arrayOfByte = new byte[Disk.blockSize];
-       SysLib.rawread(indirect, arrayOfByte);
-       this.indirect = -1;
-       return arrayOfByte;
+   /* * * * * * unregisterIndexBlock * * * * * *
+    * this method will return the contents of the DISK block that is being
+    * pointed to by the indirect pointer for this Inode
+    */
+   public byte[] unregisterIndexBlock() {
+	 // will only return the contents of the indirect block if it is not 
+	 // set to default value of -1 and not pointing to the Superblock
+     if (indirect >= 1) {
+       byte[] bytes = new byte[Disk.blockSize];
+       SysLib.rawread(indirect, bytes);
+       // reset the indirect block pointer
+       indirect = -1;
+       return bytes;
      }
      return null;
    }

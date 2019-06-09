@@ -1,16 +1,35 @@
 import java.util.Vector;
-
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* FILE NAME : FileTable.java
+*
+* This class is written to represent the system wide open FileTable for this volume
+*
+* By: Mustafa Majeed & Cody Rhee
+*
+* Date: 6/8/2019
+*
+* CHANGES:
+*
+*
+*/
 public class FileTable {
 
-   private Vector<FileTableEntry> table;         // the actual entity of this file table
+   private Vector<FileTableEntry> table; // the actual entity of this file table
    private Directory dir;        // the root directory 
 
-   public FileTable( Directory directory ) { // constructor
+   /* * * * * * FileTable( Directory ) * * * * * *
+    * constructor that will create a FileTable using the passed in Directory
+    * parameter as a reference to the File System Directory
+    */
+   public FileTable( Directory directory ) {
       table = new Vector( );     // instantiate a file (structure) table
       dir = directory;           // receive a reference to the Directory
    }                             // from the file system
 
-   // major public methods
+   /* * * * * * falloc( String, String ) * * * * * *
+    * constructor that will create a FileTable using the passed in Directory
+    * parameter as a reference to the File System Directory
+    */
    public synchronized FileTableEntry falloc( String fname, String mode ) {
       // allocate a new file (structure) table entry for this file name
       // allocate/retrieve and register the corresponding inode using dir
