@@ -42,7 +42,7 @@ public class FileSystem {
 		
 	    createInodes(files);
 	    
-	    directory = new Directory(numberOfBlocks);
+	    directory = new Directory(files);
 	    
 	    fileTable = new FileTable(directory);
 	    
@@ -78,6 +78,7 @@ public class FileSystem {
     }
     
 	public FileTableEntry open(String fileName, String mode) {
+		SysLib.cout("Open in mode[" + mode +"]\n");
 		FileTableEntry localFileTableEntry = fileTable.falloc(fileName, mode);
 	    if ( (mode == "w") && 
 	      (!deallocAllBlocks(localFileTableEntry)) ) {
@@ -87,26 +88,51 @@ public class FileSystem {
 	}
 
     
-	public boolean close(FileTableEntry ftEnt) {
-		return false;
+	public synchronized boolean close(FileTableEntry ftEnt) {
+		ftEnt.count -= 1;
+	      if (ftEnt.count > 0) {
+	        return true;
+	      }
+	    return fileTable.freeEntry(ftEnt);
+	}
+    
+	public synchronized int read(FileTableEntry ftEnt, byte[] buf) {
+		if ( ftEnt.mode.equals("w") || ftEnt.mode.equals("a") ) {
+			SysLib.cout("Invalid read attempt... Current mode = \"" + ftEnt.mode + "\"" );
+			return -1;
+		}
+		int cur = 0;
+		int remaining = buf.length;
+		while ( remaining > 0 && (ftEnt.seekPtr < (ftEnt.fileSize())) ) {
+			int blockToRead = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+			if ( blockToRead == -1 )
+				break;
+			byte[] bytes = new byte[Disk.blockSize];
+			
+			SysLib.rawread(blockToRead, bytes);
+			int seekPtrInBlock = ftEnt.seekPtr % Disk.blockSize;
+			int blockSizeLeft = Disk.blockSize - seekPtrInBlock;
+			int curLengthTR = Math.min( remaining, blockSizeLeft );
+			int length1 = ftEnt.fileSize() - ftEnt.seekPtr;
+			int totalLengthToRead = Math.min( curLengthTR, length1 );
+			
+			System.arraycopy(bytes, seekPtrInBlock, buf, cur, totalLengthToRead);
+			
+			cur += totalLengthToRead;
+			ftEnt.seekPtr += totalLengthToRead;
+			remaining -= totalLengthToRead;
+		}
+		return cur;
 	}
 
-    
 	public int fsize(FileTableEntry ftEnt) {
-		return 0;
+		return ftEnt.fileSize();
 	}
-
-    
-    
-	public int read(FileTableEntry ftEnt, byte[] buffer) {
-		return 0;
-	}
-
     
 	public synchronized int write(FileTableEntry ftEnt, byte[] buf) {
-		int i = 0;
-		int j = buf.length;
-		while (j > 0) {
+		int cur = 0;
+		int remaining = buf.length;
+		while (remaining > 0) {
 			int blockToWrite = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
 			// block not assigned in iNode
 			if ( blockToWrite == -1 ) {
@@ -114,56 +140,48 @@ public class FileSystem {
 				int freeBlock = (short)superblock.getFreeBlock();
 				// attempt to register the free bock in the iNode of the ftEnt
 				int reg = ftEnt.inode.registerTargetBlock( ftEnt.seekPtr, (short)freeBlock );
-		        /*switch ( ftEnt.inode.registerTargetBlock(ftEnt.seekPtr, freeBlock) ) {
-		          case 0: 
-		            break; 
-		          case -1: 
-		            SysLib.cerr("ThreadOS: filesystem panic on write\n");
-		            return -1;
-		          case -2: 
-		            short s = (short)superblock.getFreeBlock();
-		            if ( !ftEnt.inode.registerIndexBlock(s) ) {
-		              SysLib.cerr("ThreadOS: panic on write\n");
-		              return -1;
-		            }
-		            if ( ftEnt.inode.registerTargetBlock(ftEnt.seekPtr, freeBlock ) != 0) {
-		              SysLib.cerr("ThreadOS: panic on write\n");
-		              return -1;
-		            }
-		            break;
-		          }*/
+				
 				if ( reg == -1 ) {
 					SysLib.cout("* *Error: invalid register action* *\n");
 					return -1;
 				}
 				else if ( reg == -2 ) {
-					
+					short indirectBNum = (short)superblock.getFreeBlock();
+					if ( !ftEnt.inode.registerIndexBlock(indirectBNum) ) {
+						SysLib.cout("Cannot allocate indirect pointer in iNode # ="  + ftEnt.iNumber + "\n");
+						return -1;
+					}
+					int regCheck = ftEnt.inode.registerTargetBlock(ftEnt.seekPtr, (short)freeBlock);
+					if ( regCheck != 0 ) {
+						SysLib.cout("Unable to register new block to iNode # = * " + ftEnt.iNumber + " *for WRITE\n");
+						return -1;
+					}
 				}
 		        blockToWrite = freeBlock;
+			}
 		        
-		        byte[] bytes = new byte[Disk.blockSize];
-		        if ( SysLib.rawread( blockToWrite, bytes ) == -1 ) {
-		          System.exit(2);
-		        }
-		        int n = ftEnt.seekPtr % 512;
-		        int i1 = 512 - n;
-		        int i2 = Math.min(i1, j);
-		        
-		        System.arraycopy( buf, i, bytes, n, i2 );
-		        
-		        SysLib.rawwrite( blockToWrite, bytes );
-		        
-		        ftEnt.seekPtr += i2;
-		        i += i2;
-		        j -= i2;
-		        if (ftEnt.seekPtr > ftEnt.inode.length) {
-		        	ftEnt.inode.length = ftEnt.seekPtr;
-		        }
-		      }
-			ftEnt.inode.toDisk(ftEnt.iNumber);
-		      
-		      return i;
+		    byte[] bytes = new byte[Disk.blockSize];
+		    if ( SysLib.rawread( blockToWrite, bytes ) == -1 ) {
+		    	System.exit(2);
 		    }
+		    int seekPtrInBlock = ftEnt.seekPtr % Disk.blockSize;
+		    int blockBytesLeft = Disk.blockSize - seekPtrInBlock;
+		    int lengthWritten = Math.min( blockBytesLeft, remaining );
+		        
+		    System.arraycopy( buf, cur, bytes, seekPtrInBlock, lengthWritten );
+		        
+		    SysLib.rawwrite( blockToWrite, bytes );
+		        
+		    ftEnt.seekPtr += lengthWritten;
+		    cur += lengthWritten;
+		    remaining -= lengthWritten;
+		    if (ftEnt.seekPtr > ftEnt.inode.length) {
+		       	ftEnt.inode.length = ftEnt.seekPtr;
+		    }
+		}
+		ftEnt.inode.toDisk(ftEnt.iNumber);
+	      
+	    return cur;
 	}
 
 	private boolean deallocAllBlocks(FileTableEntry ftEnt) {
@@ -175,13 +193,12 @@ public class FileSystem {
 		      int i = 0;
 		      int j;
 		      while ( (j = SysLib.bytes2short(arrayOfByte, i) ) != -1) {
-		        this.superblock.returnBlock(j);
+		        superblock.returnBlock(j);
 		      }
 		    }
 		    for (int i = 0; i < 11; i++) {
-		      if (ftEnt.inode.direct[i] != -1)
-		      {
-		        this.superblock.returnBlock(ftEnt.inode.direct[i]);
+		      if (ftEnt.inode.direct[i] != -1) {
+		        superblock.returnBlock(ftEnt.inode.direct[i]);
 		        ftEnt.inode.direct[i] = -1;
 		      }
 		    }
@@ -191,6 +208,7 @@ public class FileSystem {
 
     
 	public boolean delete(String fileName) {
+		
 		return false;
 	}
 
@@ -199,8 +217,38 @@ public class FileSystem {
     public static final int SEEK_END = 2;
 
    
-	public int seek(FileTableEntry ftEnt, int offset, int whence) {
-		return 0;
+	public synchronized int seek(FileTableEntry ftEnt, int offset, int whence) {
+		
+		if ( whence == SEEK_SET ) {
+			// make sure seekPtr is not gonna be negative or past the file size
+			if ( (offset >= 0) && (offset <= ftEnt.fileSize())) {
+				ftEnt.seekPtr = offset;
+			}
+			else // error seek
+				return -1;
+		}
+		else if ( whence == SEEK_CUR ) {
+			// add offset to current seekPtr position
+			int cur = ftEnt.seekPtr + offset;
+			// make sure seekPtr is not gonna be negative or past the file size
+			if ( (cur >= 0) && ( cur <= ftEnt.fileSize())) {
+				ftEnt.seekPtr = cur;
+			}
+			else // error
+				return -1;
+		}
+		else if ( whence == SEEK_END ) {
+			// add offset to end of file
+			int cur = ftEnt.fileSize() + offset;
+			// make sure seekPtr is not gonna be negative or past the file size
+			if ( (cur >= 0) && (cur <= ftEnt.fileSize())) {
+				ftEnt.seekPtr = cur;
+			}
+			else // error
+				return -1;
+		}
+		// return the seekPtr in the file after making correct adjustment
+		return ftEnt.seekPtr;
 	}
 
 }

@@ -37,24 +37,35 @@ public class Directory {
 	   return null;
    }
 
-   public short ialloc( String filename ) {
+   public boolean ialloc( String filename, int dirIndex ) {
       // filename is the one of a file to be created.
       // allocates a new inode number for this filename
-	   return 0;
+	   if(fsize[dirIndex] != 0)
+		   return false;
+	   fsize[dirIndex] = Math.min( filename.length(), maxChars );
+	   filename.getChars(0, fsize[dirIndex], fnames[dirIndex], 0);
+	   return true;
    }
 
    public boolean ifree( short iNumber ) {
       // deallocates this inumber (inode number)
       // the corresponding file will be deleted.
+	   if ( fsize[iNumber] > 0 ) {
+		   fsize[iNumber] = 0;
+		   return true;
+	   }
 	   return false;
    }
 
    public short namei( String filename ) {
       // returns the inumber corresponding to this filename
-	   for (int i = 0; i < this.fsize.length; i++) {
+	   for (int i = 0; i < fsize.length; i++) {
+		   //SysLib.cout(fsize[i] + " FILESIZE for [" + i + "]\n");
 		   if ( fsize[i] == filename.length() )	{
-	        String dirFName = new String(this.fnames[i], 0, this.fsize[i]);
+			   //SysLib.cout( filename.length() + "*****same Size*****" + fsize[i] + "\n");
+	        String dirFName = new String(fnames[i], 0, fsize[i]);
 	        if (filename.equals(dirFName) ) {
+	        	//SysLib.cout( "Might have to trim!\n");
 	          return (short) i;
 	        }
 	      }

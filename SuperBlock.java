@@ -74,7 +74,17 @@ public class SuperBlock {
 
     public int getFreeBlock( ) {
     	// dequeue the top block from the free list
-        return 0;
+    	int freeBlock = freeList;
+        if (freeBlock != -1) {
+          byte[] bytes = new byte[Disk.blockSize];
+          
+          SysLib.rawread(freeBlock, bytes);
+          freeList = SysLib.bytes2int(bytes, 0);
+          
+          SysLib.int2bytes(0, bytes, 0);
+          SysLib.rawwrite(freeBlock, bytes);
+        }
+        return freeBlock;
     }
 
     public boolean returnBlock ( int bNum ) {

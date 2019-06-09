@@ -156,21 +156,33 @@ public class Kernel
                         System.out.println( "threaOS: caused read errors" );
                         return ERROR;
                   }
-                  // return FileSystem.read( param, byte args[] );
+                  if ( (myTcb = scheduler.getMyTcb() ) != null) {
+                  	 FileTableEntry ftEnt = myTcb.getFtEnt( param );
+                        if (ftEnt != null) {
+                          return fs.read(ftEnt, (byte[])args);
+                        }
+                   }
                   return ERROR;
                case WRITE:
                   switch ( param ) {
                      case STDIN:
                         System.out.println( "threaOS: cannot write to System.in" );
-                        return ERROR;
+                        return OK;
                      case STDOUT:
                         System.out.print( (String)args );
-                        break;
+                        return OK;
                      case STDERR:
                         System.err.print( (String)args );
-                        break;
+                        return OK;
                   }
-                  return OK;
+                  if ( (myTcb = scheduler.getMyTcb() ) != null) {
+                 	 FileTableEntry ftEnt = myTcb.getFtEnt( param );
+                       if (ftEnt != null) {
+                         return fs.write(ftEnt, (byte[])args);
+                       }
+                  }
+                  return -1;
+                  
                case CREAD:   // to be implemented in assignment 4
                   return cache.read( param, ( byte[] )args ) ? OK : ERROR;
                case CWRITE:  // to be implemented in assignment 4
@@ -191,38 +203,38 @@ public class Kernel
                      return ERROR;
 
                case CLOSE:   // to be implemented in project
-                  /*if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
+                  if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
                      FileTableEntry ftEnt = myTcb.getFtEnt( param );
                      if ( ftEnt == null || !fs.close( ftEnt ) )
                         return ERROR;
                      if ( myTcb.returnFd( param ) != ftEnt )
                         return ERROR;
                      return OK;
-                  }*/
+                  }
                   return ERROR;
 
                case SIZE:    // to be implemented in project
-                  /*if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
+                  if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
                      FileTableEntry ftEnt = myTcb.getFtEnt( param );
                      if ( ftEnt != null )
                         return fs.fsize( ftEnt );
-                  }*/
+                  }
                   return ERROR;
 
                case SEEK:    // to be implemented in project
-                 /* if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
+                  if ( ( myTcb = scheduler.getMyTcb( ) )!= null ) {
                      int[] sArgs = ( int[] ) args;
                      FileTableEntry ftEnt = myTcb.getFtEnt( param );
                      if ( ftEnt != null )
                         return fs.seek( ftEnt, sArgs[0], sArgs[1]);
-                  }*/
+                  }
                   return ERROR;
 
                case FORMAT:  // to be implemented in project
                   return ( fs.format( param ) ) ? OK : ERROR;
                   
                case DELETE:  // to be implemented in project
-                  return OK; //( fs.delete( (String) args ) ) ? OK : ERROR;
+                  return ( fs.delete( (String) args ) ) ? OK : ERROR;
             }
             return ERROR;
          case INTERRUPT_DISK: // Disk interrupts

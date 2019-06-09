@@ -156,9 +156,9 @@ public class Inode {
    }
    
    byte[] unregisterIndexBlock() {
-     if (this.indirect >= 0) {
+     if (this.indirect >= 1) {
        byte[] arrayOfByte = new byte[Disk.blockSize];
-       SysLib.rawread(this.indirect, arrayOfByte);
+       SysLib.rawread(indirect, arrayOfByte);
        this.indirect = -1;
        return arrayOfByte;
      }
