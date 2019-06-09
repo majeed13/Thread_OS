@@ -89,9 +89,9 @@ public class SuperBlock {
 
     public boolean returnBlock ( int bNum ) {
     	// enqueue a given block to the end of the free list
-    	if ( bNum >= 0 ) {
+    	if ( bNum >= 1 ) {
           byte[] bytes = new byte[Disk.blockSize];
-          for (int i = 0; i < 512; i++) {
+          for (int i = 0; i < Disk.blockSize; i++) {
             bytes[i] = 0;
           }
           SysLib.int2bytes(freeList, bytes, 0);

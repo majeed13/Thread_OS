@@ -208,8 +208,9 @@ public class FileSystem {
 
     
 	public boolean delete(String fileName) {
-		
-		return false;
+		FileTableEntry ftEnt = open( fileName, "w" );
+		short iNum = ftEnt.iNumber;
+		return ( close(ftEnt) && directory.ifree(iNum) ); 
 	}
 
     public static final int SEEK_SET = 0;
