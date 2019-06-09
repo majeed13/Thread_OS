@@ -1,4 +1,18 @@
-public class FileTableEntry {          // Each table entry should have
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* FILE NAME : FileTableEntry.java
+*
+* This class is written to represent entries in a FileTable
+*
+* By: Mustafa Majeed & Cody Rhee
+*
+* Date: 6/7/2019
+*
+* CHANGES:
+*
+*
+*/
+
+public class FileTableEntry {
    
    public int seekPtr;                 //    a file seek pointer
    public final Inode inode;           //    a reference to its inode
@@ -6,6 +20,10 @@ public class FileTableEntry {          // Each table entry should have
    public int count;                   //    # threads sharing this entry
    public final String mode;           //    "r", "w", "w+", or "a"
 
+   /* * * * * * FileTableEntry * * * * * *
+    * constructor that will create a FileTableEntry using the passed in 
+    * parameters. 
+    */
    public FileTableEntry ( Inode i, short inumber, String m ) {
       seekPtr = 0;             // the seek pointer is set to the file top
       inode = i;
@@ -16,6 +34,10 @@ public class FileTableEntry {          // Each table entry should have
          seekPtr = inode.length;        // seekPtr points to the end of file
    }
    
+   /* * * * * * fileSize * * * * * *
+    * will return the length of the Inode in this FileTableEntry. This number
+    * represents the size of the file
+    */
    public int fileSize() {
 	   return inode.length;
    }

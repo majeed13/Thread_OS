@@ -17,23 +17,26 @@ public class FileSystem {
 	    fileTable = new FileTable(directory);
 
 	    // directory reconstruction
-	    /*FileTableEntry dirEnt = open("/", "r");
+	    FileTableEntry dirEnt = open("/", "r");
 	    int dirSize = fsize(dirEnt);
 	    if (dirSize > 0) {
 	    	byte[] dirData = new byte[dirSize];
 	    	read(dirEnt, dirData);
 	    	directory.bytes2directory(dirData);
 	    }
-	    close(dirEnt);*/
+	    close(dirEnt);
 	}
 
 	public void sync() {
-		FileTableEntry localFileTableEntry = open("/", "w");
-	    byte[] arrayOfByte = this.directory.directory2bytes();
-	    write(localFileTableEntry, arrayOfByte);
-	    close(localFileTableEntry);
-	    
-	    this.superblock.sync();
+		// open Directory
+		FileTableEntry ftEnt = open("/", "w");
+		// create buffer
+	    byte[] bytes = directory.directory2bytes();
+	    // write to DISK
+	    write(ftEnt, bytes);
+	    close(ftEnt);
+	    // write superblock
+	    superblock.sync();
 	}
 	
 	public boolean format(int files) {

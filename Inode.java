@@ -1,3 +1,19 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* FILE NAME : Inode.java
+*
+* This class is written to represent Inodes for each file in the FileSystem.
+* Each file gets 1 Inode that will track the size of the file and pointers
+* to the disk blocks that its contents reside in.
+*
+* By: Mustafa Majeed & Cody Rhee
+*
+* Date: 6/7/2019
+*
+* CHANGES:
+*
+*
+*/
+
 public class Inode {
    public final static int iNodeSize = 32;       // fix to 32 bytes
    private final static int directSize = 11;      // # direct pointers
@@ -8,7 +24,11 @@ public class Inode {
    public short direct[] = new short[directSize]; // direct pointers
    public short indirect;                         // a indirect pointer
 
-   public Inode( ) {                                     // a default constructor
+   /* * * * * * Inode * * * * * *
+    * defalut no arg constructor that will create an Inode with length of 0
+    * a count of 0, a flag of 1 and set all pointers to -1. 
+    */
+   public Inode( ) {                                   
       length = 0;
       count = 0;
       flag = 1;
@@ -17,13 +37,19 @@ public class Inode {
       indirect = -1;
    }
 
-   public Inode( short iNumber ) {                       // retrieving inode from disk
-      // design it by yourself.
+   /* * * * * * Inode( short ) * * * * * *
+    * this constructor is used to retrieve an Inode from disk using the passed
+    * in iNumber. 
+    */
+   public Inode( short iNumber ) {                     
+      // determine block number of Inode to retrieve
       int bNum = 1 + iNumber / 16;
+      // create byte buffer
       byte[] data = new byte[Disk.blockSize];
       SysLib.rawread( bNum, data );
+      // determine the offset for this Inode
       int offset = ( iNumber % 16 ) * 32;
-
+      // begin to read the Inode data
       length = SysLib.bytes2int( data, offset );
       offset += 4;
       count = SysLib.bytes2short( data, offset );
@@ -37,41 +63,56 @@ public class Inode {
       }
       
       indirect = SysLib.bytes2short( data, offset );
-      // offset += 2;
    }
 
-   public void toDisk( short iNumber ) {                  // save to disk as the i-th inode
+   /* * * * * * toDisk( short ) * * * * * *
+    * this method is used to write the callind Inode to DISK at the passed in
+    * iNumber position in Inode list. 
+    */
+   public void toDisk( short iNumber ) { 
+	   // create byte buffer for 1 Inode
 	   byte[] bytes = new byte[32];
-	    int offset = 0;
+	   int offset = 0;
+	   // begin writing Inode data to byte buffer
+	   SysLib.int2bytes(length, bytes, offset);
+	   offset += 4;
+	   SysLib.short2bytes(count, bytes, offset);
+	   offset += 2;
+	   SysLib.short2bytes(flag, bytes, offset);
+	   offset += 2;
 	    
-	    SysLib.int2bytes(length, bytes, offset);
-	    offset += 4;
-	    SysLib.short2bytes(count, bytes, offset);
-	    offset += 2;
-	    SysLib.short2bytes(flag, bytes, offset);
-	    offset += 2;
+	   for (int i = 0; i < 11; i++) {
+	     SysLib.short2bytes(direct[i], bytes, offset);
+	     offset += 2;
+	   }
 	    
-	    for (int i = 0; i < 11; i++) {
-	      SysLib.short2bytes(direct[i], bytes, offset);
-	      offset += 2;
-	    }
-	    
-	    SysLib.short2bytes(indirect, bytes, offset);
-	    offset += 2;
-	    
-	    int bNum = 1 + iNumber / 16;
-	    byte[] fromDisk = new byte[Disk.blockSize];
-	    SysLib.rawread(bNum, fromDisk);
-	    offset = (iNumber % 16) * 32;
-	    
-	    System.arraycopy(bytes, 0, fromDisk, offset, 32);
-	    SysLib.rawwrite(bNum, fromDisk);
+	   SysLib.short2bytes(indirect, bytes, offset);
+	   offset += 2;
+	   // determine block number where this Inode resides
+	   int bNum = 1 + iNumber / 16;
+	   byte[] fromDisk = new byte[Disk.blockSize];
+	   // read the data from that block number (to ensure data is lost)
+	   SysLib.rawread(bNum, fromDisk);
+	   // determine offset for this Inode in the list
+	   offset = (iNumber % 16) * 32;
+	   // write Inode byte data to fromDisk buffer
+	   System.arraycopy(bytes, 0, fromDisk, offset, 32);
+	   // re write the fromDisk buffer to the disk block
+	   SysLib.rawwrite(bNum, fromDisk);
    }
    
-   public int findIndexBlock() {
-     return this.indirect;
+   /* * * * * * findIndirectBlock * * * * * *
+    * this method is used to write the calling Inode to DISK at the passed in
+    * iNumber position in Inode list. 
+    */
+   public int findIndirectBlock() {
+     return indirect;
    }
    
+   /* * * * * * registerIndexBlock( short ) * * * * * *
+    * this method is used to allocate the passed in block number to the
+    * indirect pointer 
+    */
    public boolean registerIndexBlock(short bNum) {
 	 // check to see if all indirect blocks are allocated
      for (int i = 0; i < directSize; i++) {
@@ -92,10 +133,13 @@ public class Inode {
      }
      // write the buffer to the indirect disk block
      SysLib.rawwrite(bNum, bytes);
-     
      return true;
    }
    
+   /* * * * * * findTargetBlock( int ) * * * * * *
+    * this method is used to find the DISK block number of a file using the
+    * passed in int value for the byte of data to find in that file.
+    */
    public int findTargetBlock(int pos) {
 	 // determine what block of the file we need access to
      int localBNum = pos / Disk.blockSize;
