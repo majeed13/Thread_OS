@@ -165,19 +165,23 @@ public class FileTable {
       
    }
 
+   /* * * * * * freeEntry( FileTableEntry ) * * * * * *
+    * this method 
+    */
    public synchronized boolean freeEntry( FileTableEntry ftEnt ) {
-      // receive a file table entry reference
-      // save the corresponding inode to the disk
-      // free this file table entry.
-      // return true if this file table entry found in my table
-	 // SysLib.cout("FileTableEntry count = " + ftEnt.count + " for FileTableEntry = " + ftEnt.iNumber + "\n");
-	  if (table.removeElement(ftEnt)) {
-		  ftEnt.inode.count--;
-		  if ( ftEnt.inode.flag == 1 && ftEnt.count == 0 )
-			  ftEnt.inode.flag = 0;
-		  if ( ftEnt.inode.flag == 2 && ftEnt.count == 0 )
-			  ftEnt.inode.flag = 0;
-		  ftEnt.inode.toDisk(ftEnt.iNumber);
+    // receive a file table entry reference
+    // save the corresponding inode to the disk
+    // free this file table entry.
+    // return true if this file table entry found in my table
+	  
+    // SysLib.cout("FileTableEntry count = " + ftEnt.count + " for FileTableEntry = " + ftEnt.iNumber + "\n");
+	  if (table.removeElement(ftEnt)) { // checks if the Vector table deleted the file passed in argument
+		  ftEnt.inode.count--;  // decrement 1 file table entry pointing to this inode
+		  if ( ftEnt.inode.flag == 1 && ftEnt.count == 0 )  // check if the inode's flag is set to read and there are no threads sharing the file
+			  ftEnt.inode.flag = 0;  // change inode's flag to unused
+		  if ( ftEnt.inode.flag == 2 && ftEnt.count == 0 )  // check if the inode's flag is set to write and there are no threads sharing the file
+			  ftEnt.inode.flag = 0;  // change inode's flag to unused
+		  ftEnt.inode.toDisk(ftEnt.iNumber);  // write the inode to disk at the passed in iNumber position in the Inode list
 		  ftEnt = null;
 		  notify( );
 		  return true;
@@ -185,6 +189,9 @@ public class FileTable {
       return false;
    }
 
+   /* * * * * * fempty * * * * * *
+    * this method checks if the Vector table that holds files is empty
+    */
    public synchronized boolean fempty( ) {
       return table.isEmpty( );  // return if table is empty 
    }                            // should be called before starting a format
