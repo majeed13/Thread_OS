@@ -44,13 +44,13 @@ public class FileTable {
       while ( true ) {
          iNum = (fname.equals("/")) ? 0 : dir.namei( fname );
          if ( iNum == -1 ) {
-        	 SysLib.cout("**filetable** FILE NOT FOUND\n");
         	 if ( mode.equals("r") ) {
         		 SysLib.cout("File Does Not Exist: Read Not Allowed.\n");
         		 return null;
         	 }
         	 iNum = (short)dir.freeSpot();
-        	 SysLib.cout("**iNum = " + iNum + "**\n");
+        	 // debug purposes
+        	 //SysLib.cout("**iNum = " + iNum + "**\n");
         	 inode = new Inode ( iNum );
         	 inode.flag = 2;
         	 if ( !dir.ialloc(fname, iNum) ) {
@@ -64,7 +64,8 @@ public class FileTable {
             inode = new Inode( iNum );
             // read mode attempted access
             if ( mode.equals("r") ) {
-            	SysLib.cout("Flag == " + inode.flag + "\n");
+            	// debug purposes
+            	//SysLib.cout("Flag == " + inode.flag + "\n");
                if ( inode.flag == 1 || inode.flag == 0 ) { // read flag
             	  inode.flag = 1;
                   break;
@@ -131,6 +132,10 @@ public class FileTable {
             }
             else {
                // error mode
+            	SysLib.cerr("threadOS: Incorrect mode (" + mode + ") "
+            			+ "attemped\n");
+            	iNum = -1;
+            	return null;
             }
          }
       }
@@ -141,6 +146,7 @@ public class FileTable {
     	  //SysLib.cout("iNum = " + iNum + "\n");
     	  for(int i = 0; i < table.size(); i++) {
     		  if (table.get(i).iNumber == iNum) {
+    			  // dubug purposes
     			  SysLib.cout("found in table\n");
     			  table.get(i).count++;
     			  inode.count++;

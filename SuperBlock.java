@@ -86,7 +86,7 @@ public class SuperBlock {
     	SysLib.int2bytes(totalInodes, bytes, 4);
     	SysLib.int2bytes(freeList, bytes, 8);
     	SysLib.rawwrite(0, bytes);
-    	SysLib.cout("Superblock created at DISK BLOCK 0\n");
+    	SysLib.cout("Superblock written to DISK BLOCK 0\n");
     }
 
     /* * * * * getFreeBlock * * * * * *

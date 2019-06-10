@@ -31,7 +31,7 @@ public class Inode {
    public Inode( ) {                                   
       length = 0;
       count = 0;
-      flag = 1;
+      flag = 0;
       for ( int i = 0; i < directSize; i++ )
          direct[i] = -1;
       indirect = -1;
@@ -41,7 +41,7 @@ public class Inode {
     * this constructor is used to retrieve an Inode from disk using the passed
     * in iNumber. 
     */
-   public Inode( short iNumber ) {                     
+   public Inode( short iNumber ) {
       // determine block number of Inode to retrieve
       int bNum = 1 + iNumber / 16;
       // create byte buffer
@@ -56,7 +56,6 @@ public class Inode {
       offset += 2;
       flag = SysLib.bytes2short( data, offset );
       offset += 2;
-
       // must get the direct pointers and indirect pointer for this INODE from disk
       for (int i = 0; i < directSize; i++, offset += 2) {
     	  direct[i] = SysLib.bytes2short( data, offset );
@@ -209,7 +208,7 @@ public class Inode {
     * this method will return the contents of the DISK block that is being
     * pointed to by the indirect pointer for this Inode
     */
-   public byte[] unregisterIndexBlock() {
+   public byte[] getIndirectIndexBlock() {
 	 // will only return the contents of the indirect block if it is not 
 	 // set to default value of -1 and not pointing to the Superblock
      if (indirect >= 1) {

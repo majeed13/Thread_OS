@@ -132,7 +132,7 @@ public class FileSystem {
 		// for debug purposes
 		//SysLib.cout("Open in mode[" + mode +"]\n");
 		FileTableEntry localFileTableEntry = fileTable.falloc(fileName, mode);
-	    if ( (mode == "w") && 
+	    if ( (mode.equals("w")) && 
 	      (!deallocAllBlocks(localFileTableEntry)) ) {
 	      return null;
 	    }
@@ -284,26 +284,32 @@ public class FileSystem {
 	}
 
 	/* * * * * * deallocAllBlocks( FileTableEntry ) * * * * * *
-    * 
+    * this method will zero out all blocks associated with the FileTableEntry
+    * that is passed in and reset Inode values to default
     */
 	private boolean deallocAllBlocks(FileTableEntry ftEnt) {
+		// some one is still using this file
 		if (ftEnt.inode.count != 1) {
 		      return false;
 		    }
-		    byte[] arrayOfByte = ftEnt.inode.unregisterIndexBlock();
-		    if (arrayOfByte != null) {
-		      int i = 0;
-		      int j;
-		      while ( (j = SysLib.bytes2short(arrayOfByte, i) ) != -1) {
-		        superblock.returnBlock(j);
-		      }
-		    }
-		    for (int i = 0; i < 11; i++) {
+		for (int i = 0; i < ftEnt.inode.direct.length; i++) {
 		      if (ftEnt.inode.direct[i] != -1) {
 		        superblock.returnBlock(ftEnt.inode.direct[i]);
 		        ftEnt.inode.direct[i] = -1;
 		      }
 		    }
+		// read contents of indirect index block
+		byte[] bytes = ftEnt.inode.getIndirectIndexBlock();
+		if (bytes != null) {
+		      int cur = 0;
+		      short contents = SysLib.bytes2short(bytes, cur);
+		      while ( contents != -1 || cur < 512) {
+		        superblock.returnBlock(contents);
+		        cur += 2;
+		        contents = SysLib.bytes2short(bytes, cur);
+		      }
+		    }
+		    // write Inode back to DISK
 		    ftEnt.inode.toDisk(ftEnt.iNumber);
 		    return true;
 	}
@@ -318,7 +324,7 @@ public class FileSystem {
 		short iNum = ftEnt.iNumber;
 
 		// return whether or not the file was deleted successfully
-		return ( close(ftEnt) && directory.ifree(iNum) ); 
+		return ( deallocAllBlocks(ftEnt) && close(ftEnt) && directory.ifree(iNum) ); 
 	}
 
 	// the file's seek pointer is set to offset bytes from the beginning of the file
