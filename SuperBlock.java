@@ -128,7 +128,7 @@ public class SuperBlock {
           freeList = bNum;
           return true;
         }
-    	SysLib.cerr("threaOS: Invalid block number to return\n");
+    	//SysLib.cerr("threaOS: Invalid block number to return\n");
         return false;
     }  
     

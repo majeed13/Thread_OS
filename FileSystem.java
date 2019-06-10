@@ -55,7 +55,8 @@ public class FileSystem {
 		// create buffer
 	    byte[] bytes = directory.directory2bytes();
 	    // write to DISK
-	    write(ftEnt, bytes);
+	    if ( fsize(ftEnt) != 0 )
+	    	write(ftEnt, bytes);
 	    close(ftEnt);
 	}
 	
