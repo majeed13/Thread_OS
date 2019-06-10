@@ -1,12 +1,29 @@
-public class FileSystem {
-	private SuperBlock superblock;
-	private Directory directory;
-	private FileTable fileTable;
-    private int numberOfBlocks;
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* FILE NAME : FileSystem.java
+*
+* This class is written to be the File System of ThreadOS. It will be used to 
+* keep track the SuperBlock, Directory and all created files for this Volume.
+*
+* By: Mustafa Majeed & Cody Rhee
+*
+* Date: 6/8/2019
+*
+* CHANGES:
+*
+*
+*/
 
+public class FileSystem {
+	private SuperBlock superblock; // This volume SuperBlock
+	private Directory directory; // This volume Directory
+	private FileTable fileTable; // This system wide open file table
+
+	/* * * * * FileSystem( int ) * * * * * *
+     * constructor that takes in an int to represent the number of disk blocks
+     * on the ThreadOS DISK that the FileSystem can use to allocate for 
+     * Superblock, Inode blocks and file blocks.
+     */
 	public FileSystem(int diskBlocks) {
-        // number of total blocks on DISK
-        numberOfBlocks = diskBlocks;
 	    // create superblock, and format disk with 64 inodes in default
 	    superblock = new SuperBlock(diskBlocks);
 
@@ -27,7 +44,12 @@ public class FileSystem {
 	    close(dirEnt);
 	}
 
+	/* * * * * sync * * * * * *
+     * this method is used to write the directory and the superblock to DISK
+     */
 	public void sync() {
+		// write superblock
+	    superblock.sync();
 		// open Directory
 		FileTableEntry ftEnt = open("/", "w");
 		// create buffer
@@ -35,29 +57,49 @@ public class FileSystem {
 	    // write to DISK
 	    write(ftEnt, bytes);
 	    close(ftEnt);
-	    // write superblock
-	    superblock.sync();
 	}
 	
+	/* * * * * format( int ) * * * * * *
+     * this method is used to re format the FileSystem using the passed in int
+     * value to represent the max number of files that this Volume will
+     * contain.
+     */
 	public boolean format(int files) {
-	    
-		superblock.format(files);
-		
-	    createInodes(files);
-	    
-	    directory = new Directory(files);
-	    
-	    fileTable = new FileTable(directory);
-	    
-	    return true;
+		// check for limitation on max num files
+		// and if FileTable is empty
+	    if ( files <= 64 && files > 0  && fileTable.fempty() ) {
+	    	superblock.format(files);
+	    	// create Inodes for this Volume
+	    	createInodes(files);
+	    	directory = new Directory(files);
+	    	fileTable = new FileTable(directory);
+	    	// success
+	    	return true;
+	    } 
+	    else { // error message
+	    	SysLib.cerr("threadOS: Error with max number of files chosen for"
+	    			+ "FileSystem.format(int files)\n");
+	    	return false;
+	    }
 	  }
 
+	/* * * * * createInodes( int ) * * * * * *
+     * this method is used to create and write the Inodes for this volume
+     * to the DISK based on the passed in int files that will signify the
+     * max number of files for this Volume
+     */
     private boolean createInodes(int files) {
-        if (files > 64 || files < 0)
-            return false;
-
+    	// max num files error
+        if (files > 64 || files < 0) {
+            SysLib.cerr("threadOS: Error in "
+            		+ "FileSystem.creatInodes(int files)\n");
+        	return false;
+        }
+        // determine number of blocks for Inode storing
         int bNum = files/16;
+        // always begin at offset 0 in the DISK block
         short offset = 0;
+        // write Inodes to each block
         for ( int i = 1; i <= bNum; i++) {
             byte[] buf = new byte[Disk.blockSize];
             for (int j = 0; j < 16; j++) {
@@ -77,11 +119,18 @@ public class FileSystem {
             SysLib.rawwrite(i, buf);
             offset = 0;
         }
+        // success
         return true;
     }
     
+    /* * * * * open( String, String ) * * * * * *
+     * this method is used to open a file and add it to the FileTable
+     * if does not already exist. It will return the correct pointer to
+     * the FileTableEntry if the file is already in the FileTable.
+     */
 	public FileTableEntry open(String fileName, String mode) {
-		SysLib.cout("Open in mode[" + mode +"]\n");
+		// for debug purposes
+		//SysLib.cout("Open in mode[" + mode +"]\n");
 		FileTableEntry localFileTableEntry = fileTable.falloc(fileName, mode);
 	    if ( (mode == "w") && 
 	      (!deallocAllBlocks(localFileTableEntry)) ) {
@@ -90,41 +139,70 @@ public class FileSystem {
 	    return localFileTableEntry;
 	}
 
-    
+	/* * * * * close( FileTableEntry ) * * * * * *
+     * this method is used to close a file in the passed in FileTableEntry.
+     * This is accomplished by decrementing the FileTableEntry count first
+     * and then checking if the count is 0 to determine if the entry needs to
+     * be removed from the FileTable or if there are other threads currently
+     * in this file and thus keeping it in the file table.
+     */
 	public synchronized boolean close(FileTableEntry ftEnt) {
+		// decrement the count to signify that the calling thread
+		// is done using the file
 		ftEnt.count -= 1;
+		  // check to see if there are others using the file currently
 	      if (ftEnt.count > 0) {
 	        return true;
 	      }
+	    // remove from FileTable if count is 0
 	    return fileTable.freeEntry(ftEnt);
 	}
     
+	/* * * * * read( FileTableEntry, byte[] ) * * * * * *
+     * this method is used to read the contents of a file to the passed in 
+     * byte[] buf. Will return the number of bytes read from the file.
+     */
 	public synchronized int read(FileTableEntry ftEnt, byte[] buf) {
+		// make sure that the entry mode is in r or w+
 		if ( ftEnt.mode.equals("w") || ftEnt.mode.equals("a") ) {
 			SysLib.cout("Invalid read attempt... Current mode = \"" + ftEnt.mode + "\"" );
 			return -1;
 		}
+		// current number of bytes read
 		int cur = 0;
+		// bytes to read to buf remaining
 		int remaining = buf.length;
+		// loop until no more bytes to read into buf OR end of file
 		while ( remaining > 0 && (ftEnt.seekPtr < (ftEnt.fileSize())) ) {
+			// current DISK block to read from
 			int blockToRead = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
-			if ( blockToRead == -1 )
+			if ( blockToRead == -1 ) // error 
 				break;
+			// create internal buffer
 			byte[] bytes = new byte[Disk.blockSize];
-			
+			// read ENTIRE DISK block to buffer
 			SysLib.rawread(blockToRead, bytes);
+			// calculate where we are in the current block
 			int seekPtrInBlock = ftEnt.seekPtr % Disk.blockSize;
+			// how many bytes remaining in the current block
 			int blockSizeLeft = Disk.blockSize - seekPtrInBlock;
+			// number of bytes we CAN read for THIS block
 			int curLengthTR = Math.min( remaining, blockSizeLeft );
+			// how many bytes remain in file
 			int length1 = ftEnt.fileSize() - ftEnt.seekPtr;
+			// TOTAL BYTES WE CAN READ THIS ITERATION
 			int totalLengthToRead = Math.min( curLengthTR, length1 );
-			
+			// copy from the internal buffer starting at the correct position
+			// to the passed in buffer starting at current number of bytes read
 			System.arraycopy(bytes, seekPtrInBlock, buf, cur, totalLengthToRead);
-			
+			// update cur number of bytes read
 			cur += totalLengthToRead;
+			// update the file seekPtr
 			ftEnt.seekPtr += totalLengthToRead;
+			// update remaining bytes to read into passed in buf
 			remaining -= totalLengthToRead;
 		}
+		// return TOTAL number of bytes read for this call
 		return cur;
 	}
 

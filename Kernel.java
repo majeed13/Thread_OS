@@ -126,6 +126,7 @@ public class Kernel
                      ioQueue.enqueueAndSleep( COND_DISK_FIN );
                   return OK;
                case SYNC:     // synchronize disk data to a real file
+            	  fs.sync(); // write out FileSystem to DISK
                   while ( disk.sync( ) == false )
                      ioQueue.enqueueAndSleep( COND_DISK_REQ );
                   while ( disk.testAndResetReady( ) == false )
