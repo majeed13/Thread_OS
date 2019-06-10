@@ -62,7 +62,7 @@ public class Directory {
     */
    public byte[] directory2bytes( ) {
       // create internal buffer
-     int numOfBytes = fsize.length + (fnames.length * 2);
+     int numOfBytes = ( fsize.length * 4 ) + ( fnames.length * maxChars * 2 );
      byte[] bytes = new byte[numOfBytes];
      int offset = 0;
      // write all int values from fsize[] to buffer
