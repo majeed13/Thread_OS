@@ -61,8 +61,21 @@ public class Directory {
     * information should be converted into bytes.
     */
    public byte[] directory2bytes( ) {
-      
-	   return null;
+      // create internal buffer
+     int numOfBytes = fsize.length + (fnames.length * 2);
+     byte[] bytes = new byte[numOfBytes];
+     int offset = 0;
+     // write all int values from fsize[] to buffer
+     for ( int i = 0; i < fsize.length; i++, offset += 4) {
+       SysLib.int2bytes(fsize[i], bytes, offset);
+     }
+     // write all char values from fnames to buffer
+     for ( int i = 0; i < fnames.length; i++, offset += maxChars * 2) {
+       String name = new String( fnames[i], 0, fsize[i] );
+       byte[] nameBytes = name.getBytes();
+       System.arraycopy( nameBytes, 0, bytes, offset, nameBytes.length );
+     }
+     return bytes;
    }
 
    /* * * * * * ialloc( String, int ) * * * * * *
