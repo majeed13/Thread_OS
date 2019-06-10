@@ -28,8 +28,11 @@ public class FileTable {
    }                             // from the file system
 
    /* * * * * * falloc( String, String ) * * * * * *
-    * constructor that will create a FileTable using the passed in Directory
-    * parameter as a reference to the File System Directory
+    * allocate a new file (structure) table entry for this file name
+    * allocate/retrieve and register the corresponding inode using dir
+    * increment this inode's count
+    * immediately write back this inode to the disk
+    * return a reference to this file (structure) table entry
     */
    public synchronized FileTableEntry falloc( String fname, String mode ) {
       // allocate a new file (structure) table entry for this file name
@@ -166,7 +169,8 @@ public class FileTable {
    }
 
    /* * * * * * freeEntry( FileTableEntry ) * * * * * *
-    * this method 
+    * this method will remove the passed in FileTableEntry from the FileTable
+    * and save the Indoe to DISK
     */
    public synchronized boolean freeEntry( FileTableEntry ftEnt ) {
     // receive a file table entry reference
