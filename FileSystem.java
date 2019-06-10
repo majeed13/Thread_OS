@@ -210,11 +210,18 @@ public class FileSystem {
 		return ftEnt.fileSize();
 	}
     
+	/* * * * * * write( FileTableEntry, byte[] ) * * * * * *
+    * this method writes in the content in the byte[] buf passed in the argument to the ftEnt also
+    * passed in the argument. Method may overwrite or append on the existing data in the file, depending 
+    * on where the seek pointer of file is. Method returns the number of bytes that have been written
+    */
 	public synchronized int write(FileTableEntry ftEnt, byte[] buf) {
-		int cur = 0;
-		int remaining = buf.length;
+		int cur = 0;	// bytes written
+		int remaining = buf.length;	// bytes left to be written
+
 		while (remaining > 0) {
-			int blockToWrite = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+			int blockToWrite = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);	// find the block number of the file passed in argument
+			
 			// block not assigned in iNode
 			if ( blockToWrite == -1 ) {
 				// retrieve first free block
@@ -226,45 +233,59 @@ public class FileSystem {
 					SysLib.cout("* *Error: invalid register action* *\n");
 					return -1;
 				}
-				else if ( reg == -2 ) {
-					short indirectBNum = (short)superblock.getFreeBlock();
-					if ( !ftEnt.inode.registerIndexBlock(indirectBNum) ) {
+				else if ( reg == -2 ) { // indirect block is not used 
+					short indirectBNum = (short)superblock.getFreeBlock();	// retrieve first free block
+					if ( !ftEnt.inode.registerIndexBlock(indirectBNum) ) {	// check if passed in block number has been allocated to the indirect pointer 
 						SysLib.cout("Cannot allocate indirect pointer in iNode # ="  + ftEnt.iNumber + "\n");
 						return -1;
 					}
+
+					// register the passed in block to the inode of the file
 					int regCheck = ftEnt.inode.registerTargetBlock(ftEnt.seekPtr, (short)freeBlock);
-					if ( regCheck != 0 ) {
+
+					if ( regCheck != 0 ) {	// check if the block number has been added into the inode
 						SysLib.cout("Unable to register new block to iNode # = * " + ftEnt.iNumber + " *for WRITE\n");
 						return -1;
 					}
 				}
-		        blockToWrite = freeBlock;
+		        blockToWrite = freeBlock;	// the block to write in becomes the first free block that was found
 			}
-		        
+		    
 		    byte[] bytes = new byte[Disk.blockSize];
+
+		    
 		    if ( SysLib.rawread( blockToWrite, bytes ) == -1 ) {
 		    	System.exit(2);
 		    }
-		    int seekPtrInBlock = ftEnt.seekPtr % Disk.blockSize;
-		    int blockBytesLeft = Disk.blockSize - seekPtrInBlock;
-		    int lengthWritten = Math.min( blockBytesLeft, remaining );
+
+		    int seekPtrInBlock = ftEnt.seekPtr % Disk.blockSize;	
+		    int blockBytesLeft = Disk.blockSize - seekPtrInBlock;	 
+		    int lengthWritten = Math.min( blockBytesLeft, remaining );	
 		        
-		    System.arraycopy( buf, cur, bytes, seekPtrInBlock, lengthWritten );
+		    // copy from the buffer passed in the argument at the correct position
+			// to the bytes array starting at seek pointer in the block to the length
+			// left to be written
+		    System.arraycopy( buf, cur, bytes, seekPtrInBlock, lengthWritten );	
 		        
-		    SysLib.rawwrite( blockToWrite, bytes );
-		        
-		    ftEnt.seekPtr += lengthWritten;
-		    cur += lengthWritten;
-		    remaining -= lengthWritten;
+		    SysLib.rawwrite( blockToWrite, bytes );	// write to the disk block
+		    
+		    
+		    ftEnt.seekPtr += lengthWritten; // increment file's seek pointer to length that was written 
+		    cur += lengthWritten; // increment number of bytes written
+		    remaining -= lengthWritten;	// decrement the number of bytes left to be written
+
 		    if (ftEnt.seekPtr > ftEnt.inode.length) {
 		       	ftEnt.inode.length = ftEnt.seekPtr;
 		    }
 		}
-		ftEnt.inode.toDisk(ftEnt.iNumber);
+		ftEnt.inode.toDisk(ftEnt.iNumber);	// write the file's inode to the disk
 	      
-	    return cur;
+	    return cur;	// return number of bytes written
 	}
 
+	/* * * * * * deallocAllBlocks( FileTableEntry ) * * * * * *
+    * 
+    */
 	private boolean deallocAllBlocks(FileTableEntry ftEnt) {
 		if (ftEnt.inode.count != 1) {
 		      return false;
@@ -287,18 +308,30 @@ public class FileSystem {
 		    return true;
 	}
 
-    
+    /* * * * * * delete( String ) * * * * * *
+    * this method deletes the file name passed in the argument. All blocks used by the file are freed. 
+    * In the case that the file is currently open, instead of deleting the file, the method returns false, indicating
+    * the file was not deleted. If the file was deleted successfully, the method returns true. 
+    */
 	public boolean delete(String fileName) {
-		FileTableEntry ftEnt = open( fileName, "w" );
+		FileTableEntry ftEnt = open( fileName, "w" );	// open a file with the file name in the argument passed and the mode set as write
 		short iNum = ftEnt.iNumber;
+
+		// return whether or not the file was deleted successfully
 		return ( close(ftEnt) && directory.ifree(iNum) ); 
 	}
 
-    public static final int SEEK_SET = 0;
-    public static final int SEEK_CUR = 1;
-    public static final int SEEK_END = 2;
+	// the file's seek pointer is set to offset bytes from the beginning of the file
+    public static final int SEEK_SET = 0;	
+    // the file's seek pointer is set to its current value plus the offset. The offset can be positive or negative.
+    public static final int SEEK_CUR = 1;	
+    // the file's seek pointer is set to the size of the file plus the offset. The offset can be positive or negative.
+    public static final int SEEK_END = 2;	
 
-   
+    /* * * * * * seek( FileTableEntry, int, int ) * * * * * *
+    * this method updates the seekpointer of the passed in file with the given set from 
+    * the beginning of the file, current seek pointer value, or the end of the file
+    */
 	public synchronized int seek(FileTableEntry ftEnt, int offset, int whence) {
 		
 		if ( whence == SEEK_SET ) {
