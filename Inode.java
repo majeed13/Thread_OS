@@ -204,7 +204,7 @@ public class Inode {
      return 0;
    }
    
-   /* * * * * * unregisterIndexBlock * * * * * *
+   /* * * * * * getIndirectIndexBlock * * * * * *
     * this method will return the contents of the DISK block that is being
     * pointed to by the indirect pointer for this Inode
     */
