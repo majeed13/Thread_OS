@@ -1,0 +1,28 @@
+Script started on Sun 12 May 2019 05:50:50 PM PDT
+]0;majeem@uw1-320-07: /home/UDRIVE/majeem/css430/p3majeem@uw1-320-07:/home/UDRIVE/majeem/css430/p3$ java Boot
+threadOS ver 1.0:
+Type ? for help
+threadOS: a new thread (thread=Thread[Thread-3,2,main] tid=0 pid=-1)
+-->l Shell
+l Shell
+threadOS: a new thread (thread=Thread[Thread-5,2,main] tid=1 pid=0)
+shell[1]% Test2
+Test2
+threadOS: a new thread (thread=Thread[Thread-7,2,main] tid=2 pid=1)
+threadOS: a new thread (thread=Thread[Thread-9,2,main] tid=3 pid=2)
+threadOS: a new thread (thread=Thread[Thread-11,2,main] tid=4 pid=2)
+threadOS: a new thread (thread=Thread[Thread-13,2,main] tid=5 pid=2)
+threadOS: a new thread (thread=Thread[Thread-15,2,main] tid=6 pid=2)
+threadOS: a new thread (thread=Thread[Thread-17,2,main] tid=7 pid=2)
+Thread[b]: response time = 3958 turnaround time = 4959 execution time = 1001
+Thread[e]: response time = 6958 turnaround time = 7458 execution time = 500
+Thread[c]: response time = 4957 turnaround time = 7960 execution time = 3003
+Thread[a]: response time = 2958 turnaround time = 7962 execution time = 5004
+Thread[d]: response time = 5958 turnaround time = 11963 execution time = 6005
+shell[2]% exit
+exit
+-->q
+q
+]0;majeem@uw1-320-07: /home/UDRIVE/majeem/css430/p3majeem@uw1-320-07:/home/UDRIVE/majeem/css430/p3$ exit
+
+Script done on Sun 12 May 2019 05:51:30 PM PDT

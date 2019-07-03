@@ -1,0 +1,31 @@
+Script started on Sun 12 May 2019 06:53:15 PM PDT
+]0;majeem@uw1-320-07: /home/UDRIVE/majeem/css430/p3majeem@uw1-320-07:/home/UDRIVE/majeem/css430/p3$ java Boot
+threadOS ver 1.0:
+Type ? for help
+threadOS: a new thread (thread=Thread[Thread-3,2,main] tid=0 pid=-1)
+-->l Shell
+l Shell
+threadOS: a new thread (thread=Thread[Thread-5,2,main] tid=1 pid=0)
+shell[1]% Test3 3
+Test3
+threadOS: a new thread (thread=Thread[Thread-7,2,main] tid=2 pid=1)
+threadOS: a new thread (thread=Thread[Thread-9,2,main] tid=3 pid=2)
+threadOS: a new thread (thread=Thread[Thread-11,2,main] tid=4 pid=2)
+threadOS: a new thread (thread=Thread[Thread-13,2,main] tid=5 pid=2)
+threadOS: a new thread (thread=Thread[Thread-15,2,main] tid=6 pid=2)
+threadOS: a new thread (thread=Thread[Thread-17,2,main] tid=7 pid=2)
+threadOS: a new thread (thread=Thread[Thread-19,2,main] tid=8 pid=2)
+Computation finished...
+Computation finished...
+Computation finished...
+Disk finished...
+Disk finished...
+Disk finished...
+elapsed time = 66408 msec
+shell[2]% exit
+exit
+-->q
+q
+]0;majeem@uw1-320-07: /home/UDRIVE/majeem/css430/p3majeem@uw1-320-07:/home/UDRIVE/majeem/css430/p3$ exit
+
+Script done on Sun 12 May 2019 06:54:41 PM PDT

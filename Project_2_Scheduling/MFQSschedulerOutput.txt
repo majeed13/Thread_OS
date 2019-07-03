@@ -1,0 +1,180 @@
+Script started on Sun 28 Apr 2019 06:06:44 PM PDT
+]0;majeem@uw1-320-07: /home/UDRIVE/majeem/css430/p2majeem@uw1-320-07:/home/UDRIVE/majeem/css430/p2$ java Boot
+threadOS ver 1.0:
+Type ? for help
+threadOS: a new thread (thread=Thread[Thread-3,5,main] tid=0 pid=-1)
+-->l Test2b
+l Test2b
+threadOS: a new thread (thread=Thread[Thread-5,5,main] tid=1 pid=0)
+threadOS: a new thread (thread=Thread[Thread-7,5,main] tid=2 pid=1)
+threadOS: a new thread (thread=Thread[Thread-9,5,main] tid=3 pid=1)
+threadOS: a new thread (thread=Thread[Thread-11,5,main] tid=4 pid=1)
+threadOS: a new thread (thread=Thread[Thread-13,5,main] tid=5 pid=1)
+threadOS: a new thread (thread=Thread[Thread-15,5,main] tid=6 pid=1)
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[e] is running
+Thread[e] is running
+Thread[e] is running
+Thread[e] is running
+Thread[e] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b] is running
+Thread[b]: response time = 985 turnaround time = 5487 execution time = 4502
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[e]: response time = 2485 turnaround time = 7986 execution time = 5501
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c] is running
+Thread[c]: response time = 1485 turnaround time = 14990 execution time = 13505
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a] is running
+Thread[a]: response time = 484 turnaround time = 22992 execution time = 22508
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d] is running
+Thread[d]: response time = 1985 turnaround time = 29991 execution time = 28006
+Test2b finished
+-->q
+q
+Superblock synchronized
+]0;majeem@uw1-320-07: /home/UDRIVE/majeem/css430/p2majeem@uw1-320-07:/home/UDRIVE/majeem/css430/p2$ exit
+
+Script done on Sun 28 Apr 2019 06:07:41 PM PDT

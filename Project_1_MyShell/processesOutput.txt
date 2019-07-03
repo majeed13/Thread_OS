@@ -1,0 +1,16 @@
+Script started on Sun 14 Apr 2019 07:06:39 PM PDT
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ ./processes kworker
+45
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ ps -A |grep kworker | wc -l
+45
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ ./processes sshd 
+208
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ ps -A | grep sshd | wc -l
+208
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ ./processes scsi
+12
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ ps -A | f[Kgrep scsi | wc -l
+12
+]0;majeem@uw1-320-07: ~/U/css430/proj1majeem@uw1-320-07:~/U/css430/proj1$ exit
+
+Script done on Sun 14 Apr 2019 07:07:54 PM PDT
