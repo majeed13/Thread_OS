@@ -1,5 +1,8 @@
 # P5_File_Systems
 
+In this project, we will build a Unix-like file system on the ThreadOS toy operating system. Through the use of the file system, user programs will now be able to access persistent data on disk by way of stream-oriented files rather than the more painful direct access to disk blocks with rawread() and rawrite().
+
+**************************************************************************************************************************************
 FileSystem.java Specification
 This class is written to be the File System of ThreadOS. It will be used to keep track the SuperBlock, Directory and all created files for this Volume. With this class, it provides user threads with system calls that allows them to format, to open, to close, to format, to write to, to read from, to update the seek pointer, to delete, and to get the size of the files. Below are the list of functions that are provided in this class:
 
