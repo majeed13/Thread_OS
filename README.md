@@ -4,6 +4,7 @@ ThreadOS is a program that `simulates` how an operating system works on a comput
 
 *******************************************************************************************************************************************
 Project Details
+
 •	myShell
 Create the basic shell for ThreadOS. The shell was designed to allow a user to load 1 to many programs for execution. Each program can be separated by an `&` or `;` to signify concurrent or sequential execution.
 
